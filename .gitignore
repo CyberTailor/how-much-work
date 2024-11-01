@@ -2,9 +2,11 @@
 # SPDX-FileCopyrightText: 2022-2024 Anna <cyber@sysrq.in>
 
 .tox
+.mypy_cache
+.pytest_cache
 
 __pycache__
-*.pyo
+*.py[co]
 
 completions
 docs/_build

@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2024 Anna <cyber@sysrq.in>
+
+version = 1
+SPDX-PackageName = "how-much-work"
+SPDX-PackageSupplier = "Anna <cyber@sysrq.in>"
+SPDX-PackageDownloadLocation = "https://how-much-work.sysrq.in/"
+
+[[annotations]]
+path = "**/tests/**/cassettes/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"

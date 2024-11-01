@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2024 Anna <cyber@sysrq.in>
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "how-much-work"
+description = "Estimate the amount of work needed to package a project"
+authors = [
+    {name = "Anna", email = "cyber@sysrq.in"},
+]
+dynamic = ["version"]
+readme = "README.md"
+license = "WTFPL"
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp<4,>=3",
+    "pydantic>=2,<3",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: DFSG approved",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: System :: Software Distribution",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+keywords = ["packaging", "repository", "maintainer"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+plugin-pypi = [
+    "aiohttp<4,>=3",
+    "lru-dict",
+    "poetry-core<2,>=1",
+]
+test-plugin-pypi = [
+    "pytest-recording",
+]
+
+[project.scripts]
+how-much-work = "how_much_work.__main__:cli"
+
+[project.urls]
+Home = "https://how-much-work.sysrq.in"
+Source = "https://git.sysrq.in/how-much-work"
+Issues = "https://bugs.sysrq.in/enter_bug.cgi?product=Software&component=how-much-work"
+Changelog = "https://how-much-work.sysrq.in/release-notes.html"
+
+[tool.hatch.version]
+path = "how_much_work/constants.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/how_much_work",
+]
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "session"
+
+[tool.mypy]
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = [
+    "how_much_work.plugins.pypi.tests.*",
+]
+# requiring explicit types for all test methods would be cumbersome
+disallow_untyped_defs = false
+check_untyped_defs = true
+
+[tool.bandit]
+exclude_dirs = [
+    "how_much_work/plugins/pypi/tests",
+]
