@@ -99,8 +99,7 @@ async def normalize(pkg: Package, *,
     :param pkg: PyPI package
     :param session: :external+aiohttp:py:mod:`aiohttp` client session
 
-    :raises package_registry.registry.PackageValidationError: on invalid or
-        nonexistant packages
+    :raises PackageValidationError: on invalid or nonexistent packages
 
     :returns: normalized package
     """
