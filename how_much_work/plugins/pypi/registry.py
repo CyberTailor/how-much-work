@@ -18,8 +18,8 @@ from poetry.core.version.markers import (
 )
 from poetry.core.version.requirements import Requirement
 
-from how_much_work.exceptions import PackageValidationError
-from how_much_work.types import Package
+from how_much_work.core.exceptions import PackageValidationError
+from how_much_work.core.types import Package
 
 from how_much_work.plugins.pypi.constants import (
     PYPI_URL,

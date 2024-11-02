@@ -7,8 +7,8 @@ import asyncio
 import aiohttp
 import pytest
 
-from how_much_work.tests.utils import to_list
-from how_much_work.types import Package
+from how_much_work.core.tests.utils import to_list
+from how_much_work.core.types import Package
 
 from how_much_work.plugins.pypi.registry import normalize, get_children
 

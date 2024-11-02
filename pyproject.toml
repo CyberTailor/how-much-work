@@ -57,11 +57,19 @@ Issues = "https://bugs.sysrq.in/enter_bug.cgi?product=Software&component=how-muc
 Changelog = "https://how-much-work.sysrq.in/release-notes.html"
 
 [tool.hatch.version]
-path = "how_much_work/constants.py"
+path = "how_much_work/core/constants.py"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "how_much_work/core",
+    "how_much_work/plugins/pypi",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [
     "/how_much_work",
+
+    "/conftest.py",
 ]
 
 [tool.pytest.ini_options]

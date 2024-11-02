@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 
 import aiohttp
 
-from how_much_work.constants import USER_AGENT
+from how_much_work.core.constants import USER_AGENT
 
 
 @asynccontextmanager
