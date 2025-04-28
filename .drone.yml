@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2023 Anna <cyber@sysrq.in>
+
+kind: pipeline
+type: docker
+name: default
+
+workspace:
+  path: /tests
+
+steps:
+  - name: test
+    image: 31z4/tox:4-5
+    user: root
+    commands:
+      - tox run
