@@ -18,7 +18,10 @@ from poetry.core.version.markers import (
 )
 from poetry.core.version.requirements import Requirement
 
-from how_much_work.core.exceptions import PackageValidationError
+from how_much_work.core.exceptions import (
+    PackageDependenciesFetchError,
+    PackageValidationError,
+)
 from how_much_work.core.types import Package
 
 from how_much_work.plugins.pypi.constants import (
@@ -73,7 +76,8 @@ async def _get_project_info(pkg_name: str, *,
         result = JsonProject.model_validate_json(raw_data).info
     except ValueError as err:
         # JSON decode error
-        raise PackageValidationError from err
+        pkg = Package(name=pkg_name, repo_name=REPO_NAME)
+        raise PackageValidationError(pkg) from err
     finally:
         _finish_processing()
 
@@ -106,16 +110,16 @@ async def normalize(pkg: Package, *,
 
     try:
         project = await _get_project_info(pkg.name, session=session)
-    except aiohttp.ClientResponseError as err:
+    except (aiohttp.ClientResponseError, asyncio.TimeoutError) as err:
         # Usually "Project Not Found"
-        raise PackageValidationError from err
+        raise PackageValidationError(pkg) from err
 
     if (condition := pkg.condition) is not None:
         try:
             # do a roundtrip
             condition = str(parse_marker(condition))
         except Exception as err:
-            raise PackageValidationError from err
+            raise PackageValidationError(pkg) from err
 
     return pkg.model_copy(
         update={
@@ -164,7 +168,10 @@ async def get_children(pkg: Package, *,
             yield Package(name=req.name, repo_name=REPO_NAME,
                           condition=str(marker))
 
-    project = await _get_project_info(pkg.name, session=session)
+    try:
+        project = await _get_project_info(pkg.name, session=session)
+    except (aiohttp.ClientResponseError, asyncio.TimeoutError) as err:
+        raise PackageDependenciesFetchError(pkg) from err
     if not project.requires_dist:
         # No dependencies defined.
         return
