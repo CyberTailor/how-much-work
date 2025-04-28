@@ -104,3 +104,40 @@ exclude_dirs = [
     "how_much_work/plugins/pypi/tests",
     "how_much_work/app/tests",
 ]
+
+[tool.tox]
+requires = ["tox>=4.21"]
+minversion = "4.21"
+env_list = ["3.11", "3.12", "3.13", "lint"]
+
+[tool.tox.env_run_base]
+description = "run the tests + mypy under {base_python}"
+ignore_errors = true
+deps = [
+    "mypy",
+    "types-networkx",
+]
+extras = [
+    "test",
+]
+commands = [
+    ["pytest", "-vv", "{tty:--color=yes}", "--block-network", "-p", "no:vcr", "{posargs:how_much_work}"],
+    ["mypy", "--explicit-package-bases", "{posargs:how_much_work}"],
+]
+
+[tool.tox.env.lint]
+description = "run the linters"
+ignore_errors = true
+skip_install = true
+deps = [
+    "bandit",
+    "pycodestyle",
+    "pyflakes",
+    "reuse",
+]
+commands = [
+    ["pyflakes", "{posargs:how_much_work}"],
+    ["pycodestyle", "{posargs:how_much_work}"],
+    ["bandit", "-c", "pyproject.toml", "-r", "{posargs:how_much_work}"],
+    ["reuse", "lint"],
+]
