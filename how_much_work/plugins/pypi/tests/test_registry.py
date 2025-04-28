@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: WTFPL
-# SPDX-FileCopyrightText: 2024 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2024-2025 Anna <cyber@sysrq.in>
 # No warranty
 
 import asyncio
@@ -14,7 +14,7 @@ from how_much_work.plugins.pypi.registry import normalize, get_children
 
 
 @pytest.mark.vcr
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio
 async def test_normalize(session: aiohttp.ClientSession):
     pkg = Package(name="Requests", repo_name="PyPI", condition="extra=='socks'")
     expected = Package(name="requests", repo_name="pypi",
@@ -25,7 +25,7 @@ async def test_normalize(session: aiohttp.ClientSession):
 
 
 @pytest.mark.vcr
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio
 async def test_get_children(session: aiohttp.ClientSession):
     pkg = Package(name="requests", repo_name="pypi")
     pkg_socks = Package(name="requests", repo_name="pypi",
