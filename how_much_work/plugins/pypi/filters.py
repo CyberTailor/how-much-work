@@ -17,6 +17,8 @@ from poetry.core.version.markers import (
 
 from how_much_work.core.types import Package
 
+from how_much_work.plugins.pypi.constants import REPO_NAME
+
 
 def _walk_marker(marker: BaseMarker) -> Iterator[SingleMarker]:
     """
@@ -40,6 +42,9 @@ def exclude_python_extras(*extras: str) -> Callable[[Package], bool]:
     """
 
     def pkg_filter(pkg: Package) -> bool:
+        if pkg.repo_name != REPO_NAME:
+            return True
+
         if not pkg.condition:
             return True
 

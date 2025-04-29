@@ -18,6 +18,9 @@ def test_filter_extras():
     pkg_filter = exclude_python_extras("dev*", "doc*", "test*", "all")
     pkg = Package(name="example", repo_name="pypi")
 
+    assert pkg_filter(Package(name="example", repo_name="example",
+                              condition="extra=='all'"))
+
     assert pkg_filter(pkg)
     assert pkg_filter(pkg.model_copy(update={"condition": "extra=='feature'"}))
     assert pkg_filter(pkg.model_copy(update={"condition": "extra!='doc'"}))
