@@ -17,5 +17,5 @@ steps:
       - >-
         DEBIAN_FRONTEND=noninteractive
         apt-get install -y --no-install-recommends
-        graphviz graphviz-devel
+        graphviz graphviz-dev
       - tox run
