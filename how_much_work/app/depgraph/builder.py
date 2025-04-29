@@ -99,6 +99,9 @@ class DependencyGraph:
 
         return self._graph.copy(as_view=True)
 
+    def mark_node(self, pkg: Package, *, marker: NodeStatus) -> None:
+        self._graph.nodes[pkg].update(dataclasses.asdict(marker))
+
     async def add_depgraph(self, pkg: Package) -> None:
         """
         Add a package with its dependencies to the graph.
@@ -125,8 +128,6 @@ class DependencyGraph:
     async def _add_depgraph(self, pkg: Package, *, depth: SupportsFloat) -> None:
 
         self._visited.add(pkg)
-        if callable(self._pkg_filter) and not self._pkg_filter(pkg):
-            return
 
         tasks = [asyncio.create_task(self._process_child(pkg, child, depth=depth))
                  async for child in self.get_package_children(pkg)]
@@ -135,7 +136,7 @@ class DependencyGraph:
         except PackageDependenciesFetchError:
             # Fetching dependencies failed.
             # Mark the package as incomplete.
-            self._graph.nodes[pkg].update(dataclasses.asdict(NodeStatus.INCOMPLETE))
+            self.mark_node(pkg, marker=NodeStatus.INCOMPLETE)
 
     async def _process_child(self, parent: Package, child: Package, *,
                              depth: SupportsFloat) -> None:
@@ -145,7 +146,7 @@ class DependencyGraph:
             # Add invalid package and mark it as visited.
             self._visited.add(child)
             self._graph.add_edge(parent, child)
-            self._graph.nodes[child].update(dataclasses.asdict(NodeStatus.INVALID))
+            self.mark_node(child, marker=NodeStatus.INVALID)
             return
 
         if child in self._visited:
@@ -153,13 +154,18 @@ class DependencyGraph:
                 # Existing nodes should always be linked.
                 self._graph.add_edge(parent, child)
         elif float(depth) > 0:
-            # Package not marked as visited yet - going deeper.
-            self._graph.add_edge(parent, child)
-            await self._add_depgraph(child, depth=float(depth) - 1)
+            if callable(self._pkg_filter) and not self._pkg_filter(child):
+                # Skipped by the filters.
+                # Mark as visited without adding to the graph.
+                self._visited.add(child)
+            else:
+                # Package not marked as visited yet - going deeper.
+                self._graph.add_edge(parent, child)
+                await self._add_depgraph(child, depth=float(depth) - 1)
         else:
             # Not allowed to go deeper - mark current node as
             # incomplete.
             #
             # As it's been marked as visited, incomplete status will
             # stay.
-            self._graph.nodes[parent].update(dataclasses.asdict(NodeStatus.INCOMPLETE))
+            self.mark_node(parent, marker=NodeStatus.INCOMPLETE)
