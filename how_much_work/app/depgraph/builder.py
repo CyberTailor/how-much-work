@@ -9,7 +9,7 @@ Build a dependency graph for any package.
 import asyncio
 import dataclasses
 import math
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from enum import Enum
 from typing import SupportsFloat
 
@@ -56,10 +56,21 @@ class DependencyGraph:
 
     def __init__(self, plugman: PluginManager, *,
                  aiohttp_session: aiohttp.ClientSession,
-                 maxdepth: SupportsFloat = math.inf):
+                 maxdepth: SupportsFloat = math.inf,
+                 pkg_filter: Callable[[Package], bool] | None = None):
+        """
+        :param plugman: pluggy plugin manager
+        :param aiohttp_session: aiohttp client session
+        :param maxdepth: maximum number of nodes (including root) allowed in a
+            single branch
+        :param pkg_filter: callback to allow or block processing the current
+            package
+        """
+
         self._maxdepth = maxdepth
         self._plugman = plugman
         self._aiohttp_session = aiohttp_session
+        self._pkg_filter = pkg_filter
 
         self._graph: nx.DiGraph = nx.DiGraph()
         self._visited: set[Package] = set()
@@ -114,6 +125,8 @@ class DependencyGraph:
     async def _add_depgraph(self, pkg: Package, *, depth: SupportsFloat) -> None:
 
         self._visited.add(pkg)
+        if callable(self._pkg_filter) and not self._pkg_filter(pkg):
+            return
 
         tasks = [asyncio.create_task(self._process_child(pkg, child, depth=depth))
                  async for child in self.get_package_children(pkg)]
