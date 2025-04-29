@@ -13,7 +13,7 @@ from how_much_work.core.constants import PACKAGE
 from how_much_work.core.plugin_api import PackageRegistryPluginSpec
 
 
-@pytest_asyncio.fixture(loop_scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def session() -> AsyncGenerator[aiohttp.ClientSession, None]:
     timeout = aiohttp.ClientTimeout(total=15)
     test_session = aiohttp.ClientSession(timeout=timeout)

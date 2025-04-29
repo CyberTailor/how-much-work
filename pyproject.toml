@@ -78,7 +78,7 @@ include = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
+addopts = "--doctest-modules --block-network -p no:vcr"
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
@@ -121,7 +121,7 @@ extras = [
     "test",
 ]
 commands = [
-    ["pytest", "-vv", "{tty:--color=yes}", "--block-network", "-p", "no:vcr", "{posargs:how_much_work}"],
+    ["pytest", "-vv", "{tty:--color=yes}", "{posargs:how_much_work}"],
     ["mypy", "--explicit-package-bases", "{posargs:how_much_work}"],
 ]
 
