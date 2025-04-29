@@ -27,6 +27,7 @@ dependencies = [
 
     # 'pypi' plugin
     "aiohttp<4,>=3",
+    "click",
     "lru-dict",
     "poetry-core>=1",
     "pydantic>=2,<3",
@@ -49,13 +50,15 @@ test = [
     "pytest-asyncio",
 
     # 'pypi' plugin
+    "pytest",
+    "pytest-asyncio",
     "pytest-recording",
 ]
 
 [project.scripts]
 how-much-work = "how_much_work.app.__main__:cli"
 
-[project.entry-points."how_much_work.plugins"]
+[project.entry-points."how_much_work.plugins.registry_v1"]
 pypi = "how_much_work.plugins.pypi"
 
 [project.urls]

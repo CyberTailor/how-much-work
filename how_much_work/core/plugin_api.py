@@ -9,6 +9,7 @@ Loadable plug-in interface.
 from collections.abc import AsyncIterator, Coroutine
 
 import aiohttp
+import click
 import pluggy
 
 from how_much_work.core.constants import PACKAGE
@@ -64,6 +65,14 @@ class PackageRegistryPluginSpec:
         :param aiohttp_session: :external+aiohttp:py:mod:`aiohttp` client session
 
         :returns: package's direct children
+        """
+
+    @pkg_registry_hook_spec
+    def setup_plugin_options(self, click_group: click.Group) -> None:
+        """
+        Register plugin-specific command-line options.
+
+        :param click_group: Click group of the main application
         """
 
 

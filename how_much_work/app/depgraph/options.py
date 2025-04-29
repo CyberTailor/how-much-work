@@ -8,7 +8,7 @@ Depgraph subcommand options.
 
 from pydantic import Field
 
-from how_much_work.app.options import OptionsBase
+from how_much_work.core.options import OptionsBase
 
 
 class DepgraphOptions(OptionsBase):
