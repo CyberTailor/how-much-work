@@ -17,7 +17,10 @@ import aiohttp
 import networkx as nx
 from pluggy import PluginManager
 
-from how_much_work.core.exceptions import PackageValidationError
+from how_much_work.core.exceptions import (
+    PackageDependenciesFetchError,
+    PackageValidationError,
+)
 from how_much_work.core.types import Package
 
 
@@ -114,7 +117,12 @@ class DependencyGraph:
 
         tasks = [asyncio.create_task(self._process_child(pkg, child, depth=depth))
                  async for child in self.get_package_children(pkg)]
-        await asyncio.gather(*tasks)
+        try:
+            await asyncio.gather(*tasks)
+        except PackageDependenciesFetchError:
+            # Fetching dependencies failed.
+            # Mark the package as incomplete.
+            self._graph.nodes[pkg].update(dataclasses.asdict(NodeStatus.INCOMPLETE))
 
     async def _process_child(self, parent: Package, child: Package, *,
                              depth: SupportsFloat) -> None:

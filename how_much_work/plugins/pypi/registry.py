@@ -155,8 +155,7 @@ async def get_children(pkg: Package, *,
     :param pkg: PyPI package
     :param session: :external+aiohttp:py:mod:`aiohttp` client session
 
-    :raises aiohttp.ClientResponseError: on HTTP errors
-    :raises ValueError: on JSON decode failure
+    :raises PackageDependenciesFetchError: on network errors
 
     :returns: package's direct children
     """
