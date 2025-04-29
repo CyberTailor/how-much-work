@@ -13,4 +13,9 @@ steps:
     image: 31z4/tox:4-5
     user: root
     commands:
+      - apt-get update
+      - >-
+        DEBIAN_FRONTEND=noninteractive
+        apt-get install -y --no-install-recommends
+        graphviz graphviz-devel
       - tox run
