@@ -10,7 +10,22 @@ import pytest
 from how_much_work.core.tests.utils import to_list
 from how_much_work.core.types import Package
 
+from how_much_work.plugins.pypi.filters import exclude_python_extras
 from how_much_work.plugins.pypi.registry import normalize, get_children
+
+
+def test_filter_extras():
+    pkg_filter = exclude_python_extras("dev*", "doc*", "test*", "all")
+    pkg = Package(name="example", repo_name="pypi")
+
+    assert pkg_filter(pkg)
+    assert pkg_filter(pkg.model_copy(update={"condition": "extra=='feature'"}))
+    assert pkg_filter(pkg.model_copy(update={"condition": "extra!='doc'"}))
+    assert pkg_filter(pkg.model_copy(update={"condition": "python_version<='3.12'"}))
+
+    assert not pkg_filter(pkg.model_copy(update={"condition": "extra=='test'"}))
+    assert not pkg_filter(pkg.model_copy(update={"condition": "extra=='tests'"}))
+    assert not pkg_filter(pkg.model_copy(update={"condition": "extra=='all'"}))
 
 
 @pytest.mark.vcr
