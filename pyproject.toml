@@ -31,6 +31,11 @@ dependencies = [
     "lru-dict",
     "poetry-core>=1",
     "pydantic>=2,<3",
+
+    # 'repology' plugin
+    "aiohttp<4,>=3",
+    "click",
+    "repology-client>=0.2.0,<2",
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -48,10 +53,6 @@ keywords = ["packaging", "repository", "maintainer"]
 test = [
     "pytest",
     "pytest-asyncio",
-
-    # 'pypi' plugin
-    "pytest",
-    "pytest-asyncio",
     "pytest-recording",
 ]
 
@@ -60,6 +61,9 @@ how-much-work = "how_much_work.app.__main__:cli"
 
 [project.entry-points."how_much_work.plugins.registry_v1"]
 pypi = "how_much_work.plugins.pypi"
+
+[project.entry-points."how_much_work.plugins.distromap_v1"]
+repology = "how_much_work.plugins.repology"
 
 [project.urls]
 Home = "https://how-much-work.sysrq.in"
@@ -92,6 +96,8 @@ markers = [
 [tool.mypy]
 disallow_untyped_defs = true
 no_implicit_optional = true
+disallow_any_generics = true
+plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -111,7 +117,7 @@ exclude_dirs = [
 [tool.tox]
 requires = ["tox>=4.21"]
 minversion = "4.21"
-env_list = ["3.11", "3.12", "3.13", "lint"]
+env_list = ["3.12", "3.13", "3.14", "lint"]
 
 [tool.tox.env_run_base]
 description = "run the tests + mypy under {base_python}"

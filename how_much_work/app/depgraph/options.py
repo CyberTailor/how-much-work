@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: WTFPL
-# SPDX-FileCopyrightText: 2024-2025 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2024-2026 Anna <cyber@sysrq.in>
 # No warranty
 
 """
@@ -18,9 +18,6 @@ class DepgraphOptions(OptionsBase):
 
     #: Package name.
     package: str = Field(min_length=1)
-
-    #: Repository name.
-    from_repo: str = Field(min_length=1)
 
     #: Maximum depth level.
     max_depth: int = Field(gt=0)

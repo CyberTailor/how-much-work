@@ -22,7 +22,9 @@ async def aiohttp_session() -> AsyncGenerator[aiohttp.ClientSession, None]:
 
     headers = {"user-agent": USER_AGENT}
     timeout = aiohttp.ClientTimeout(total=30)
-    session = aiohttp.ClientSession(headers=headers, timeout=timeout)
+    conn = aiohttp.TCPConnector(limit_per_host=1)
+    session = aiohttp.ClientSession(headers=headers, timeout=timeout,
+                                    connector=conn)
 
     try:
         yield session

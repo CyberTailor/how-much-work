@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: WTFPL
-# SPDX-FileCopyrightText: 2024-2025 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2024-2026 Anna <cyber@sysrq.in>
 # No warranty
 
 """
@@ -9,7 +9,8 @@ Build a dependency graph for any package.
 import asyncio
 import dataclasses
 import math
-from collections.abc import AsyncIterator, Callable
+import sys
+from collections.abc import AsyncIterator, Awaitable, Callable, Collection
 from enum import Enum
 from typing import SupportsFloat
 
@@ -48,31 +49,43 @@ class NodeStatus(SpecialNode, Enum):
     #: This node is invalid because it could not be normalized.
     INVALID = ("invalid", "red")
 
+    #: This node has matching package(s) from another repository.
+    DONE = ("done", "green")
+
+    #: This node is from another repository.
+    VIRTUAL = ("virtual", "white")
+
 
 class DependencyGraph:
     """
     Dependency graph builder.
     """
 
-    def __init__(self, plugman: PluginManager, *,
-                 aiohttp_session: aiohttp.ClientSession,
-                 maxdepth: SupportsFloat = math.inf,
-                 pkg_filter: Callable[[Package], bool] | None = None):
+    def __init__(
+        self, plugman: PluginManager, *,
+        aiohttp_session: aiohttp.ClientSession,
+        maxdepth: SupportsFloat = math.inf,
+        pkg_filter: Callable[[Package], bool] | None = None,
+        pkg_distromap: Callable[..., Awaitable[Collection[Package]]] | None = None
+    ):
         """
         :param plugman: pluggy plugin manager
-        :param aiohttp_session: aiohttp client session
+        :param aiohttp_session: :py:mod:`aiohttp` client session
         :param maxdepth: maximum number of nodes (including root) allowed in a
             single branch
         :param pkg_filter: callback to allow or block processing the current
-            package
+            package (can be also used for progress reporting)
+        :param pkg_distromap: callback to connect the original package with
+            packages from another repository
         """
 
         self._maxdepth = maxdepth
         self._plugman = plugman
         self._aiohttp_session = aiohttp_session
         self._pkg_filter = pkg_filter
+        self._pkg_distromap = pkg_distromap
 
-        self._graph: nx.DiGraph = nx.DiGraph()
+        self._graph: "nx.DiGraph[Package]" = nx.DiGraph()
         self._visited: set[Package] = set()
         self._in_processing: dict[Package, asyncio.Event] = {}
 
@@ -86,8 +99,18 @@ class DependencyGraph:
             pkg=pkg, aiohttp_session=self._aiohttp_session
         )
 
+    def filter_pkg(self, pkg: Package) -> bool:
+        if callable(self._pkg_filter):
+            return self._pkg_filter(pkg)
+        return True
+
+    async def get_package_children_override(self, pkg: Package) -> Collection[Package]:
+        if callable(self._pkg_distromap):
+            return await self._pkg_distromap(pkg, aiohttp_session=self._aiohttp_session)
+        return frozenset()
+
     @property
-    def graph(self) -> nx.DiGraph:
+    def graph(self) -> "nx.DiGraph[Package]":
         """
         Read-only view of the dependency graph.
 
@@ -129,6 +152,18 @@ class DependencyGraph:
 
         self._visited.add(pkg)
 
+        if len(pkg_subst := await self.get_package_children_override(pkg)) != 0:
+            # Add replacements as children and terminate further processing.
+            #
+            # Marking replacements as visited is not needed: if it's a real
+            # dependency for some other package, let it be processed as
+            # usual.
+            self.mark_node(pkg, marker=NodeStatus.DONE)
+            for other in pkg_subst:
+                self._graph.add_edge(pkg, other)
+                self.mark_node(other, marker=NodeStatus.VIRTUAL)
+            return
+
         tasks = [asyncio.create_task(self._process_child(pkg, child, depth=depth))
                  async for child in self.get_package_children(pkg)]
         try:
@@ -154,7 +189,7 @@ class DependencyGraph:
                 # Existing nodes should always be linked.
                 self._graph.add_edge(parent, child)
         elif float(depth) > 0:
-            if callable(self._pkg_filter) and not self._pkg_filter(child):
+            if not self.filter_pkg(child):
                 # Skipped by the filters.
                 # Mark as visited without adding to the graph.
                 self._visited.add(child)

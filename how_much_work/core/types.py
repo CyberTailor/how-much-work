@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: WTFPL
-# SPDX-FileCopyrightText: 2024 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2025 Anna <cyber@sysrq.in>
 # No warranty
 
 """
-Type definitions implemented as Pydantic models.
+Common type definitions.
 """
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -25,9 +25,7 @@ class Package(BaseModel):
     condition: str | None = None
 
     def __str__(self) -> str:
-        result = f"{self.name!s}"
-        if self.repo_name is not None:
-            result += f"::{self.repo_name!s}"
+        result = f"{self.name!s}::{self.repo_name!s}"
         if self.condition is not None:
             result += f"[{self.condition!s}]"
 

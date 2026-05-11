@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: WTFPL
-# SPDX-FileCopyrightText: 2024-2025 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2024-2026 Anna <cyber@sysrq.in>
 # No warranty
 
 """
@@ -21,14 +21,16 @@ from how_much_work.app.depgraph.options import DepgraphOptions
 
 async def build_depgraph(plugman: PluginManager, options: MainOptions) -> None:
     cmd_options = DepgraphOptions.model_validate(options.children["depgraph"])
-    pkg = Package(name=cmd_options.package, repo_name=cmd_options.from_repo)
+    pkg = Package(name=cmd_options.package, repo_name=options.from_repo)
 
     async with aiohttp_session() as session:
         builder = DependencyGraph(plugman, maxdepth=cmd_options.max_depth,
                                   pkg_filter=options.pkg_filter,
+                                  pkg_distromap=options.pkg_distromap,
                                   aiohttp_session=session)
         await builder.add_depgraph(pkg)
 
+    # GraphViz
     pgv = nx.nx_agraph.to_agraph(builder.graph)
     pgv.graph_attr.update(rankdir="LR")  # Left to right
     pgv.node_attr.update(shape="box", style="filled", fillcolor="lightgrey")

@@ -1,22 +1,23 @@
 # SPDX-License-Identifier: WTFPL
-# SPDX-FileCopyrightText: 2024 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2024-2026 Anna <cyber@sysrq.in>
 # No warranty.
 
 """
 Loadable plug-in interface.
 """
 
-from collections.abc import AsyncIterator, Coroutine
+from collections.abc import AsyncIterator, Awaitable
 
 import aiohttp
 import click
 import pluggy
 
 from how_much_work.core.constants import PACKAGE
+from how_much_work.core.options import MainOptions
 from how_much_work.core.types import Package
 
-pkg_registry_hook_spec = pluggy.HookspecMarker(PACKAGE)
-pkg_registry_hook_impl = pluggy.HookimplMarker(PACKAGE)
+hook_spec = pluggy.HookspecMarker(PACKAGE)
+hook_impl = pluggy.HookimplMarker(PACKAGE)
 
 
 class PackageRegistryPluginSpec:
@@ -24,24 +25,24 @@ class PackageRegistryPluginSpec:
     Specifications of plugin hooks for package registry providers.
     """
 
-    @pkg_registry_hook_spec(firstresult=True)
+    @hook_spec(firstresult=True)
     def normalize_package(
         self, pkg: Package, aiohttp_session: aiohttp.ClientSession
-    ) -> Coroutine[None, None, Package] | None:
+    ) -> Awaitable[Package] | None:
         """
         Normalize a package.
 
         Makes sure the canonical variants of properties are used.
 
         :param pkg: a package object
-        :param aiohttp_session: :external+aiohttp:py:mod:`aiohttp` client session
+        :param aiohttp_session: :py:mod:`aiohttp` client session
 
         :raises PackageValidationError: on invalid packages
 
         :returns: normalized package or ``None``
         """
 
-    @pkg_registry_hook_spec(firstresult=True)
+    @hook_spec(firstresult=True)
     def get_package_children(
         self, pkg: Package, aiohttp_session: aiohttp.ClientSession
     ) -> AsyncIterator[Package] | None:
@@ -62,13 +63,13 @@ class PackageRegistryPluginSpec:
         - Children are returned in order they encountered.
 
         :param pkg: package from the registry
-        :param aiohttp_session: :external+aiohttp:py:mod:`aiohttp` client session
+        :param aiohttp_session: :py:mod:`aiohttp` client session
 
         :returns: package's direct children
         """
 
-    @pkg_registry_hook_spec
-    def setup_plugin_options(self, click_group: click.Group) -> None:
+    @hook_spec
+    def setup_registry_plugin_options(self, click_group: click.Group) -> None:
         """
         Register plugin-specific command-line options.
 
@@ -76,7 +77,23 @@ class PackageRegistryPluginSpec:
         """
 
 
+class DistromapPluginSpec:
+    """
+    Specifications of plugin hooks for package mapping providers.
+    """
+
+    @hook_spec
+    def setup_distromap_plugin(self, options: MainOptions, config: object) -> None:
+        """
+        Configure a plugin.
+
+        :param options: main application options
+        :param config: parsed :file:`distromap.toml` configuration file
+        """
+
+
 __all__ = [
-    "pkg_registry_hook_impl",
+    "DistromapPluginSpec",
     "PackageRegistryPluginSpec",
+    "hook_impl",
 ]

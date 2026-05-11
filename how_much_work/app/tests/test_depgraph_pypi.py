@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2024-2025 Anna <cyber@sysrq.in>
 # No warranty.
 
+from typing import Any
+
 import aiohttp
 import pluggy
 import pytest
@@ -27,7 +29,7 @@ async def builder(
     session: aiohttp.ClientSession
 ) -> DependencyGraph:
 
-    builder_args: dict = {}
+    builder_args: dict[str, Any] = {}
     if (marker := request.node.get_closest_marker("builder_args")) is not None:
         builder_args = marker.kwargs
 
