@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: CC0-1.0
-# SPDX-FileCopyrightText: 2023-2025 Anna <cyber@sysrq.in>
+# SPDX-FileCopyrightText: 2023-2026 Anna <cyber@sysrq.in>
 
 kind: pipeline
 type: docker
@@ -11,3 +11,5 @@ steps:
     environment:
       TOX_PARAMS: >-
         -c pyproject.toml
+      DNF_INSTALL: >-
+        graphviz-devel
