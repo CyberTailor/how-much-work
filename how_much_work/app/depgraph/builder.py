@@ -9,7 +9,6 @@ Build a dependency graph for any package.
 import asyncio
 import dataclasses
 import math
-import sys
 from collections.abc import AsyncIterator, Awaitable, Callable, Collection
 from enum import Enum
 from typing import SupportsFloat
